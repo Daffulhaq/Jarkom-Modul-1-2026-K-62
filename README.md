@@ -122,6 +122,24 @@ iptables -t nat -L -v -n
 tinggal run aja /root/cek_status.sh 
 aman? harusnya sih
 
+### 6.
+
+Pertama, praktikan perlu mengunduh file yang disediakan asisten, kemudian menyalin isinya ke file `traffic_protocol7.sh` yang ada di `terminal node Mika`.
+
+Kemudian, pada topologi jaringan yang telah dibuat di GNS3, kita perlu mengaktifkan "Start Capture" pada kabel yang menghubungkan Switch dengan node Mika. Jika sudah, maka  logo kaca pembesar akan muncul.
+<img width="976" height="672" alt="Screenshot 2026-09-18 235134" src="https://github.com/user-attachments/assets/f5099a7e-2e43-4e82-85b2-1329c8c35adf" />
+
+Kemudian, jalankan `traffic_protocol.sh` untuk membuat traffic.
+
+<img width="881" height="957" alt="Screenshot 2026-09-18 235000" src="https://github.com/user-attachments/assets/ec843c4c-6371-4c46-86f5-64df81aa05d8" />
+
+<img width="787" height="946" alt="Screenshot 2026-09-18 235025" src="https://github.com/user-attachments/assets/4da18753-8041-432e-8030-a05af958104b" />
+
+Di Wireshark, gunakan filter `dns || icmp` untuk melacak package yang diminta sesuai soal.
+
+<img width="1917" height="931" alt="Screenshot 2026-09-17 190702" src="https://github.com/user-attachments/assets/4aa272e2-96cf-4e28-bd81-011d86ef709b" />
+
+<img width="1917" height="927" alt="Screenshot 2026-09-17 190717" src="https://github.com/user-attachments/assets/6ef9c206-23a3-4c21-b35d-909852540f13" />
 
 ### 14.
 Fitur endpoints mengagregasi ribuan paket menjadi daftar alamat host unik (L3/IPv4) dan port layanan (L4/TCP).
