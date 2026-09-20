@@ -505,3 +505,73 @@ HEAD /
 Maka didapatkan flag: KOMJAR26{TLS_D3crypt_cTtcuYV9AqEArZEauyuYNJzim}
 
 ![doc](assets/20.F.png)
+
+
+
+## Revisi
+### 7
+
+Untuk mengerjakan soal ini, yang perlu dilakukan diawal adalah menginstall `vsftpd` dan membuat `Shared Folder /var/wired/data` di terminal node Chisa.
+```bash
+apk update
+apk add vsftpd
+mkdir -p /var/wired/data
+chmod 777 /var/wired/data
+```
+
+<img width="977" height="232" alt="Screenshot 2026-09-20 222049" src="https://github.com/user-attachments/assets/38c0c1c7-fc0d-45f3-b34d-e279094442b4" />
+
+
+Setelah melakukan kedua hal tersebut, sekarang kita membuat akun untuk user `alice`, `mika`, dan `eiri`.
+```bash
+adduser -h /var/wired/data -s /usr/sbin/nologin alice
+adduser -h /var/wired/data -s /usr/sbin/nologin mika
+adduser -h /var/wired/data -s /usr/sbin/nologin eiri
+```
+
+Kemudian, kita perlu mengatur konfigurasi akses pada `vsftpd.conf`. `local_enable` dan `write_enable` untuk mengaktifkan login user lokal yang bisa menulis file. `chroot_local_user` dan `allow_writeable_chroot` untuk mengunci tiap user hanya bisa beroperasi di dalam `/var/wired/data`, tanpa bisa keluar folder tersebut. `user_config_dir` membuka celah override konfigurasi per-user (dipakai membatasi user "mika"), sementara `userlist_enable`, `userlist_deny`, dan `userlist_file` mengaktifkan mekanisme blacklist nama user (dipakai untuk memblokir user "eiri"). Terakhir, `anonymous_enable=NO` menutup celah login tanpa kredensial, dan `seccomp_sandbox=NO` mencegah proses FTP crash.
+```bash
+cat >> /etc/vsftpd/vsftpd.conf << 'EOF'
+local_enable=YES
+write_enable=YES
+chroot_local_user=YES
+allow_writeable_chroot=YES
+user_config_dir=/etc/vsftpd/user_conf
+userlist_enable=YES
+userlist_deny=YES
+userlist_file=/etc/vsftpd/user_list
+anonymous_enable=NO
+seccomp_sandbox=NO
+EOF
+```
+
+Sesuai soal, user "mika" dibatasi aksesnya ke `read-only` dan user "eiri" di-blacklist.
+```bash
+mkdir -p /etc/vsftpd/user_conf
+echo "write_enable=NO" > /etc/vsftpd/user_conf/mika
+echo "eiri" >> /etc/vsftpd/user_list
+```
+
+Setelah di konfigurasi, `vsftpd` dijalankan untuk melakukan tes, nantinya terminal akan mengeluarkan PID.
+```bash
+vsftpd /etc/vsftpd/vsftpd.conf &
+```
+
+<img width="508" height="50" alt="Screenshot 2026-09-20 234725" src="https://github.com/user-attachments/assets/bf2b0d4c-3348-4295-a514-acb21631432a" />
+
+
+Kemudian, testing dimulai dengan membuat file `signal_alice.txt` di terminal node Alice mengirimnya.
+```bash
+echo "hai ini alice" > signal_alice.txt
+```
+Note: 192.242.2.2 adalah IP dari node Chisa
+
+<img width="575" height="140" alt="Screenshot 2026-09-20 222302" src="https://github.com/user-attachments/assets/f1769438-6337-41f3-95e6-2316f1ce6f8d" />
+
+Testing dianggap berhasil karena server merespons dengan "14 bytes transferred" yang membuktikan bahwa user "alice" memiliki akses `read & write`.
+
+Selanjutnya, testing dilakukan untuk user "eiri" di terminal node Eiri.
+
+<img width="485" height="115" alt="Screenshot 2026-09-20 234346" src="https://github.com/user-attachments/assets/44bcfb63-7970-47fc-9be2-c9b83244792e" />
+
+Login memang berhasil dilakukan, tetapi user tidak bisa melihat isi didalamnya karena user "eiri" diblokir aksesnya.
